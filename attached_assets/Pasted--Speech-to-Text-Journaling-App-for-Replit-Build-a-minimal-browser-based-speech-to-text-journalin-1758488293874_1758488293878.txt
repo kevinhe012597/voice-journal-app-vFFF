@@ -1,0 +1,96 @@
+# Speech-to-Text Journaling App for Replit
+
+Build a minimal browser-based speech-to-text journaling app. **Start with Web Speech API for MVP, then add AssemblyAI upgrade path.**
+
+## Core User Flow
+1. Hold button → speak → release button
+2. App converts speech to formatted bullet journal entries
+3. Auto-appends under today's date
+
+## Expected Output Format
+```
+9.16.2025
+- Woke up early and went to range  
+- MVP IC Meeting
+- Call with Alex from Ridge Ventures
+- Founder meeting with Archit and knocked it out of the park
+- Washed Lil Blue
+```
+
+## Tech Stack (Keep Simple)
+- **MVP**: Single `index.html` with Web Speech API
+- **Optional**: Add `server.js` + Express only if AssemblyAI proxy needed
+- No frameworks, minimal dependencies
+
+## Core Features
+
+### UI (Minimal)
+- Big "Hold to Talk" button (mousedown/up + click toggle)
+- Read-only textarea showing compiled journal
+- "Copy to Clipboard" button
+- Recording state: "Listening..." + pulsing dot
+- Space bar shortcut for start/stop
+
+### Text Processing Pipeline
+1. **Split speech into bullets**: Split on `.`, `;`, `, then`, `and then`
+2. **Clean each bullet**:
+   - Trim whitespace
+   - Capitalize first letter  
+   - Remove trailing punctuation
+   - Strip "I ", "I'm ", "I went and ", "I had " prefixes when appropriate
+3. **Date formatting**: M.D.YYYY (no leading zeros: `9.16.2025`)
+
+### Date Logic
+- If today's date exists in textarea → append new bullets under it
+- If not → add newlines + new date header + bullets
+- **Never duplicate date headers**
+
+## Implementation Hints
+```javascript
+// Splitter regex
+/\.(?:\s|$)|;|(?:,?\s*(?:and then|then)\s+)/i
+
+// Date format
+const today = new Date();
+const dateHeader = `${today.getMonth() + 1}.${today.getDate()}.${today.getFullYear()}`;
+
+// localStorage key
+'stt_journal_v1'
+```
+
+## File Structure
+```
+index.html          # Main app (inline CSS/JS OK)
+server.js           # Only if AssemblyAI proxy needed  
+package.json        # Only if server.js exists
+```
+
+## AssemblyAI Integration (Phase 2)
+- Use `process.env.ASSEMBLYAI_API_KEY` 
+- Add simple Express proxy route: `/api/token` or `/api/transcribe`
+- **TODO comments**: Mark where to swap Web Speech API for AssemblyAI
+
+## Error Handling
+- Show inline error messages for mic/transcription failures
+- Graceful fallback if speech recognition unavailable
+
+## Persistence  
+- Save textarea content to localStorage on every change
+- Load on page start
+
+## Example Input → Output
+**Speech**: *"Woke up early and went to the range, then MVP IC meeting, call with Alex from Ridge Ventures"*
+
+**Output**:
+```
+9.16.2025
+- Woke up early and went to range
+- MVP IC Meeting  
+- Call with Alex from Ridge Ventures
+```
+
+## Success Criteria
+- ✅ One-click run on Replit
+- ✅ Clean, readable code under 200 lines total
+- ✅ Works offline with Web Speech API
+- ✅ Clear upgrade path to AssemblyAI marked with TODOs
